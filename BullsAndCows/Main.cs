@@ -5,19 +5,24 @@ namespace BullsAndCows
 {
     class Program
     {
-        static void EndWithComment(string text)
+        /// <summary>
+        /// Выводит сообщение и завершает выполнение программы
+        /// </summary>
+        /// <param name="text">Выводимый пользователю текст</param>
+        private static void EndWithComment(string text)
         {
             Console.WriteLine(text);
             Environment.Exit(0);
         }
 
-        static string GetUniqDigit(ref bool[] used, int currentLength)
+        /// <summary>
+        /// Генерирует очередную цифру для числа, чтобы в нём не было повторяющихся
+        /// </summary>
+        /// <param name="used">Массив уже использованных цифр, от 0 до 9</param>
+        /// <param name="currentLength">Текущая длина числа (влияет на ведущий ноль)</param>
+        /// <returns>Очередная цифра для числа в виде строки длины 1</returns>
+        private static string GetUniqDigit(ref bool[] used, int currentLength)
         {
-            if (currentLength > 9)
-            {
-                EndWithComment("Запрошено число больше 10");
-            }
-
             Random randomizer = new Random();
             int minNumber = currentLength > 0 ? 0 : 1;
             ulong newNumber;
@@ -30,7 +35,12 @@ namespace BullsAndCows
             return newNumber.ToString();
         }
 
-        static string GenerateNumber(int length)
+        /// <summary>
+        /// Генерирует число без повторяющихся цифр заданной длины
+        /// </summary>
+        /// <param name="length">Длина требуемого числа</param>
+        /// <returns>Возвращает требуемое число в виде строки</returns>
+        private static string GenerateNumber(int length)
         {
             string result = "";
             bool[] used = new bool[10];
@@ -46,7 +56,15 @@ namespace BullsAndCows
 
             return result;
         }
-        static bool digitalCheck(string input, string number)
+
+        /// <summary>
+        /// Проверка формат введённого числа - его длину и состав только из цифр
+        /// </summary>
+        /// <param name="input">Введённое число</param>
+        /// <param name="number">Загаданное число</param>
+        /// <returns>Возвращает true если число соответствует, иначе возвращает false
+        /// и выводит пользователю причину</returns>
+        private static bool DigitalCheck(string input, string number)
         {
             if (input.Length != number.Length)
             {
@@ -62,51 +80,104 @@ namespace BullsAndCows
                     return false;
                 }
             }
+
             return true;
         }
 
-        static int NextTurn(string number)
+        /// <summary>
+        /// Вычисляет число коров в числе (аргументы симметричны)
+        /// </summary>
+        /// <param name="number1">Загаданное число</param>
+        /// <param name="number2">Введённое пользователем число</param>
+        /// <returns>Число коров в числе</returns>
+        private static int CountCows(string number1, string number2)
         {
-            string userNumber;
-            Console.WriteLine($"Введите число из {number.Length} цифр, а я скажу сколько в нём быков и коров. " +
-                                                $"Введите \"exit\" чтобы выйти");
-            do
+            int cows = 0;
+            for (int i = 0; i < number1.Length; i++)
             {
-                userNumber = Console.ReadLine();
-            } while (!(userNumber == "exit" || digitalCheck(userNumber, number)));
-
-            if (userNumber == "exit")
-            {
-                EndWithComment("Завершение работы программы");
-            }
-            if (userNumber == number)
-            {
-                Console.WriteLine($"\nВы верно угадали число {number}!\nПоиграем ещё?\n");
-                return 1;
-            }
-
-            int cows = 0, bulls = 0;
-            for (int i = 0; i < number.Length; i++)
-            {
-                if (number[i] == userNumber[i])
+                for (int j = 0; j < number2.Length; j++)
                 {
-                    bulls++;
-                }
-
-                for (int j = 0; j < number.Length; j++)
-                {
-                    if (i != j && number[i] == userNumber[j])
+                    if (i != j && number1[i] == number2[j])
                     {
                         cows++;
                     }
                 }
             }
 
+            return cows;
+        }
+
+        /// <summary>
+        /// Вычисляет число быков в числе (аргументы симметричны)
+        /// </summary>
+        /// <param name="number1">Загаданное число</param>
+        /// <param name="number2">Введённое пользователем число</param>
+        /// <returns>Число быков в числе</returns>
+        private static int CountBulls(string number1, string number2)
+        {
+            int bulls = 0;
+            for (int i = 0; i < number1.Length; i++)
+            {
+                if (number1[i] == number2[i])
+                {
+                    bulls++;
+                }
+            }
+
+            return bulls;
+        }
+
+        /// <summary>
+        /// Принимает новую попытку от пользователя либо команду завершения выполнения
+        /// </summary>
+        /// <param name="number">Загаданное число</param>
+        /// <returns>Корректное введённое число, либо завершение программы</returns>
+        private static string NewGuess(string number)
+        {
+            string userNumber;
+            Console.WriteLine($"Введите число из {number.Length} цифр, а я скажу сколько в нём быков и коров. " +
+                              "Введите \"exit\" чтобы выйти");
+            do
+            {
+                userNumber = Console.ReadLine();
+            } while (!(userNumber == "exit" || DigitalCheck(userNumber, number)));
+
+            if (userNumber == "exit")
+            {
+                EndWithComment("Завершение работы программы");
+            }
+
+            return userNumber;
+        }
+
+        /// <summary>
+        /// Запускает новый ход пользователя
+        /// </summary>
+        /// <param name="number">Загаданное число</param>
+        /// <returns>0 если число ещё не угадано, 1 если угадано</returns>
+        private static int NextTurn(string number)
+        {
+            string userNumber = NewGuess(number);
+
+            if (userNumber == number)
+            {
+                Console.WriteLine($"\nВы верно угадали число {number}!\nПоиграем ещё?\n");
+                return 1;
+            }
+
+            int cows = CountCows(number, userNumber),
+                bulls = CountBulls(number, userNumber);
+
             Console.WriteLine($"{bulls} быков и {cows} коров. Попробуйте снова!");
             return 0;
         }
 
-        static int SafeInputInt()
+        /// <summary>
+        /// Корректный ввод новой длины для загадываемого числа
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="FormatException"></exception>
+        private static int SafeInputInt()
         {
             int number = -1;
             Console.WriteLine("Введите число от 1 до 10 - длину загадываемого числа. \n" +
@@ -128,7 +199,11 @@ namespace BullsAndCows
             return number;
         }
 
-        static void Main(string[] args)
+        /// <summary>
+        /// Точка входа в программу. Запускает новую игру, контролирует перезапуск
+        /// </summary>
+        /// <param name="args"></param>
+        private static void Main(string[] args)
         {
             int lenght = SafeInputInt();
             while (lenght != 0)
@@ -143,6 +218,7 @@ namespace BullsAndCows
 
                 lenght = SafeInputInt();
             }
+
             EndWithComment("Завершение работы программы");
         }
     }
