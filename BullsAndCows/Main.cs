@@ -5,7 +5,7 @@ namespace BullsAndCows
 {
     class Program
     {
-        static void EndWithException(string text)
+        static void EndWithComment(string text)
         {
             Console.WriteLine(text);
             Environment.Exit(0);
@@ -15,7 +15,7 @@ namespace BullsAndCows
         {
             if (currentLength > 9)
             {
-                EndWithException("Запрошено число больше 10");
+                EndWithComment("Запрошено число больше 10");
             }
 
             Random randomizer = new Random();
@@ -52,13 +52,18 @@ namespace BullsAndCows
             string userNumber;
             do
             {
-                Console.WriteLine($"Введите число из {number.Length} цифр, а я скажу сколько в нём быков и коров");
+                Console.WriteLine($"Введите число из {number.Length} цифр, а я скажу сколько в нём быков и коров " +
+                                  $"Введите \"exit\" чтобы выйти");
                 userNumber = Console.ReadLine();
-            } while (userNumber.Length != number.Length);
+            } while (userNumber.Length != number.Length && userNumber != "exit");
 
+            if (userNumber == "exit")
+            {
+                EndWithComment("Завершение работы программы");
+            }
             if (userNumber == number)
             {
-                Console.WriteLine($"Вы верно угадали число {number}!");
+                Console.WriteLine($"\nВы верно угадали число {number}!\n");
                 return 1;
             }
 
@@ -83,17 +88,44 @@ namespace BullsAndCows
             return 0;
         }
 
-        static void Main(string[] args)
+        static int SafeInputInt()
         {
-            Console.WriteLine("Введите одно число - длину");
-            int lenght = Convert.ToInt32(Console.ReadLine());
-            string randomNumber = GenerateNumber(lenght);
-            Console.WriteLine(randomNumber);
-            int gameResult;
+            int number = -1;
+            Console.WriteLine("Введите число от 1 до 10 - длину загадываемого числа. \n" +
+                              "Введите 0, чтобы выйти.");
             do
             {
-                gameResult = GameTurn(randomNumber);
-            } while (gameResult != 1);
+                try
+                {
+                    number = Convert.ToInt32(Console.ReadLine());
+                    if (number > 10 || number < 0)
+                        throw new FormatException();
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Пожалуйста, вводите число от 1 до 10.");
+                }
+            } while (number < 0 || number > 10);
+
+            return number;
+        }
+
+        static void Main(string[] args)
+        {
+            int lenght = SafeInputInt();
+            while (lenght != 0)
+            {
+                string randomNumber = GenerateNumber(lenght);
+                // Console.WriteLine(randomNumber);
+                int gameResult;
+                do
+                {
+                    gameResult = GameTurn(randomNumber);
+                } while (gameResult != 1);
+
+                lenght = SafeInputInt();
+            }
+            EndWithComment("Завершение работы программы");
         }
     }
 }
