@@ -46,16 +46,34 @@ namespace BullsAndCows
 
             return result;
         }
+        static bool digitalCheck(string input, string number)
+        {
+            if (input.Length != number.Length)
+            {
+                Console.WriteLine($"Проверьте корректность данных. Необходимо ввести число длины {number.Length}");
+                return false;
+            }
 
-        static int GameTurn(string number)
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (!(input[i] >= '0' && input[i] <= '9'))
+                {
+                    Console.WriteLine("Проверьте корректность данных. Число не должно содержать посторонних символов");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        static int NextTurn(string number)
         {
             string userNumber;
+            Console.WriteLine($"Введите число из {number.Length} цифр, а я скажу сколько в нём быков и коров. " +
+                                                $"Введите \"exit\" чтобы выйти");
             do
             {
-                Console.WriteLine($"Введите число из {number.Length} цифр, а я скажу сколько в нём быков и коров " +
-                                  $"Введите \"exit\" чтобы выйти");
                 userNumber = Console.ReadLine();
-            } while (userNumber.Length != number.Length && userNumber != "exit");
+            } while (!(userNumber == "exit" || digitalCheck(userNumber, number)));
 
             if (userNumber == "exit")
             {
@@ -63,7 +81,7 @@ namespace BullsAndCows
             }
             if (userNumber == number)
             {
-                Console.WriteLine($"\nВы верно угадали число {number}!\n");
+                Console.WriteLine($"\nВы верно угадали число {number}!\nПоиграем ещё?\n");
                 return 1;
             }
 
@@ -120,7 +138,7 @@ namespace BullsAndCows
                 int gameResult;
                 do
                 {
-                    gameResult = GameTurn(randomNumber);
+                    gameResult = NextTurn(randomNumber);
                 } while (gameResult != 1);
 
                 lenght = SafeInputInt();
